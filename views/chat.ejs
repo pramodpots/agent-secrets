@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        <%= title %>
+    </title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/knowledge/kgsearch/widget/1.0/widget.min.css">
+    <script type="text/javascript" src="https://www.gstatic.com/knowledge/kgsearch/widget/1.0/widget.min.js"></script>
+    <script src="/javascripts/knowledgeGraph.js"></script>
+
+
+    <script src="/javascripts/database.js" type="module"></script>
+    <script src="/javascripts/canvas.js"></script>
+    <script src="/javascripts/chat.js"></script>
+    <script src="/javascripts/app.js"></script>
+
+</head>
+
+
+<body onload="init()" onload="initDatabase()">
+    <% include ./navbar.ejs %>
+        <!-- First Section Joining Chat Interface -->
+        <div id="initial_form" style="display: block; margin-top: 10%">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-2"></div>
+                    <!--Divider column-->
+
+                    <div class="col-lg-8">
+                        <h1 class="text-center">
+                            <%= title %>
+                        </h1>
+                        <p class="text-center"> Please insert with an UserName and RoomID to <kbd>JOIN</kbd> the chat
+                            <br>You can
+                            also generate RoomID using [Generate Room] button
+                        </p>
+                        <form onsubmit="return false">
+                            <div class="form-group row p-2">
+                                <label for="name" class="col-lg-2 col-md-2 col-form-label text-muted"> UserName </label>
+                                <div class="col-lg-10 col-md-10">
+                                    <input type="text" id="name" name="name" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="form-group row p-2">
+                                <label for="roomNo" class="col-lg-2 col-md-2 col-form-label text-muted"> Room ID
+                                </label>
+                                <div class="col-lg-10 col-md-10">
+                                    <div class="row">
+                                        <div class="col-lg-8 col-md-8">
+                                            <input type="text" id="roomNo" name="roomNo" class="form-control">
+                                        </div>
+                                        <button class="btn btn-success col-lg-4 col-md-4" id="roomNoGenerator"
+                                            onclick="generateRoom()">
+                                            Generate Room
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="form-group row p-2">
+                                <div class="col-2"></div>
+                                <button id="connect" onclick="connectToRoom()" class="btn btn-info col-8 text-center">
+                                    Connect
+                                </button>
+                                <div class="col-2"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <!--code for modal box -->
+                    <dialog id="roomListModal" class="w3-modal" style="width:50%;height: 20%">
+                        <div class="w3-modal-content">
+                            <div class="w3-container">
+                                <span onclick="document.getElementById('roomListModal').style.display='none'"
+                                    class="w3-closebtn">&times;</span>
+                                <p><label>Select room to join:
+                                        <select id="roomList">
+                                        </select>
+                                    </label>
+                                </p>
+                                <button id="confirmBtn" onclick="joinRoom(roomList.value)" style="float: right">Join
+                                    Room</button>
+                                <!-- $roomList.value-->
+                            </div>
+                        </div>
+                    </dialog>
+
+
+                    <div class="col-lg-2"> </div>
+                    <!--Divider column-->
+                </div>
+            </div>
+        </div>
+
+
+        <!--Chat interface-->
+        <div id="chat_interface" class="mt-2" style="display: none;">
+            <div class="container-fluid">
+                <div class="row" style="height: 90vh;">
+                    <div class="col-8">
+                        <div class="h-50">
+                            <div class="row p-2">
+                                <div class="col-8">
+                                    <div id="box" style="width: 100%; height: 40vh">
+                                        <img id="image" height="100%">
+                                        <canvas id="canvas" style=" z-index: 2"></canvas>
+                                        <canvas id="draw" style=" z-index: 1"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <p>Welcome to chat room</p>
+                                    <span>UserName: </span>
+                                    <kbd>
+                                        <div id="who_you_are" style="display: inline"></div>
+                                    </kbd>
+                                    <br>
+                                    <span>RoomID:</span>
+                                    <kbd>
+                                        <div id="in_room" style="display: inline"></div>
+                                    </kbd>
+                                    <br>
+                                    <button class="canvas-clear btn btn-danger w-100 mt-4">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="h-50">
+                            <div id="history" style="height: 40vh;" class="scrolling"></div>
+                            <form class="row align-items-center" onsubmit="return false;">
+                                <div class="col-10">
+                                    <!--                                        <label class="sr-only" for="inlineFormInputGroup">Username</label>-->
+                                    <div class="input-group">
+                                        <div class="input-group-text">@Message</div>
+                                        <input type="text" class="form-control" id="chat_input" name="chat_input"
+                                            placeholder="Type here">
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <button class="btn btn-dark" id="chat_send" onclick="sendChatText()">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div>
+                            <input type="text" class="form-control" id="knowledgeInput" placeholder="Topic Search">
+                        </div>
+                        <div id="knowledgeOutput" class="scrolling"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>

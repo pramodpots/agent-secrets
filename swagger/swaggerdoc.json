@@ -1,0 +1,198 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "COM6504",
+    "description": "deno team group project",
+    "termsOfService": "http://api_url/terms/",
+    "contact": {
+      "name": "Ajinkya Bhushan, Pramod Potdar, Vaibhav Jagzap",
+      "url": "https://github.com/pramodpots/deno-team-proj",
+      "email": "adbhushan1@sheffield.ac.uk"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/",
+      "description": "the application server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Get the index page of the application showing the various reports",
+        "operationId": "getIndex",
+        "responses": {
+          "200": {
+            "description": "successful fetch of index page"
+          }
+        }
+      }
+    },
+    "/chat/{reportID}": {
+      "get": {
+        "description": "Get the chat page of the specific report",
+        "operationId": "getChatPage",
+        "parameters": [
+          {
+            "name": "reportID",
+            "in": "path",
+            "description": "ID of report as stored in MongoDb",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correct input of Child structure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/id"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stories": {
+      "get": {
+        "description": "Returns list of all stories sorted by date",
+        "operationId": "getAll",
+        "responses": {
+          "200": {
+            "description": "successful fetch of all the stories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/story"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid data or not found"
+          }
+        }
+      }
+    },
+    "/stories/{storyID}": {
+      "get": {
+        "description": "Get the chat page of the specific report",
+        "operationId": "getStoryById",
+        "parameters": [
+          {
+            "name": "storyID",
+            "in": "path",
+            "description": "ID of report as stored in MongoDb",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correct input of Child structure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/story"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Story not found"
+          }
+        }
+      }
+    },
+    "/stories/upload": {
+      "post": {
+        "description": "Upload a story to the database",
+        "operationId": "saveStory",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The story object",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/story"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful insertion of story"
+          },
+          "500": {
+            "description": "Invalid data"
+          }
+        }
+      }
+    },
+    "/uploadreport": {
+      "get": {
+        "description": "Returns the upload report page",
+        "operationId": "getUploadReport",
+        "responses": {
+          "200": {
+            "description": "successful fetch of the upload report page"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "id": {
+        "type": "string",
+        "description": "an id which mongodb generates when storing an object",
+        "example": "62815d97e3e918f89b1bf6c3"
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "internal_code": {
+            "type": "string"
+          }
+        }
+      },
+      "story": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "imgBase64": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
